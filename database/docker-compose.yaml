@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  pws_database:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: pdogs
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+      - ./sql/:/docker-entrypoint-initdb.d
+    networks:
+      - internal
+networks:
+  internal:

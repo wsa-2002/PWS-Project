@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "sheet-extractor"
+version = "0.1.0"
+description = ""
+authors = ["wsa"]
+readme = "README.md"
+packages = [{include = "sheet_extractor"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "0.63.0"
+uvicorn = "^0.18.3"
+asyncpg = "^0.26.0"
+databases = ">=0.4.3,<0.5.0"
+python-dotenv = ">=0.18.0,<0.19.0"
+PyYAML = "^6.0"
+starlette-context = "^0.3.4"
+PyJWT = "^2.4.0"
+pydantic = "^1.10.1"
+passlib = "^1.7.4"
+argon2-cffi = "^21.3.0"
+aio-pika = "^8.2.0"
+python-multipart = "^0.0.5"
+line-bot-sdk = "^2.3.0"
+pyter = "^0.2.2.1"
+pytesseract = "^0.3.10"
+google-cloud-storage = "^2.5.0"
+line-bot-sdk-extra = "^0.1.2"
+boto3 = "^1.24.68"
+fpdf = "^1.7.2"
+pytube = "^12.1.0"
+opencv-python = "^4.6.0.66"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+jupyterlab = "^3.4.6"
+matplotlib = "^3.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
