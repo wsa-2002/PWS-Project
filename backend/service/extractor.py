@@ -18,7 +18,7 @@ TEMP_PDF_FILENAME = 'temp.pdf'
 class SheetExtractor:
 
     def __init__(self, url, interval: float = 1, identify_threshold: float = 0.07):
-        self.yt = YouTube(url)
+        self.yt = YouTube(url,use_oauth=True, allow_oauth_cache=True)
         self.filename = self.yt.streams.filter(progressive=True, file_extension='mp4').order_by(
             'resolution').desc().first().download()
 
