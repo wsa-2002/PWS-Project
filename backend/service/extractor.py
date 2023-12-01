@@ -83,8 +83,16 @@ class SheetExtractor:
     @staticmethod
     def batch_crop_images(dir_name: str):
         filenames = os.listdir(dir_name)
-        for filename in filenames:
-            SheetExtractor.crop_image(f'{dir_name}/{filename}')
+        # for filename in filenames:
+        #     SheetExtractor.crop_image(f'{dir_name}/{filename}')
+        for i in range(len(filenames)):
+            filename = filenames[i]
+            if i == 0:
+                # print(i)
+                hight_extract = SheetExtractor.crop_image_2(f'{dir_name}/{filename}')
+            else:
+                SheetExtractor.crop_image(f'{dir_name}/{filename}',height=hight_extract)
+
 
     @staticmethod
     def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
@@ -113,7 +121,6 @@ class SheetExtractor:
         threshold_row = 0
 
         for row in mask_white[20:,-10]:# approximately at the up right corner
-            print(row)
             # row is a number that >=0
             if row > 0:
                 threshold_row += 1
@@ -122,10 +129,11 @@ class SheetExtractor:
                 break
 
         # Crop the upper rectangular region
-        crop = image[:threshold_row, :]
-
+        crop = image[:threshold_row, :width]
+        print(file_path)
         dir_name, file_name = file_path.split('/')
         cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
+        return threshold_row
 
     @staticmethod
     def compose_and_upload_images(filenames: List[str], dir_name: str, file_extension='PDF') -> do.S3File:
