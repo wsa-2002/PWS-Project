@@ -11,7 +11,7 @@ from base import do
 import log
 from utils.identifier import are_different_images
 from persistence.s3 import temp
-
+import numpy as np
 TEMP_PDF_FILENAME = 'temp.pdf'
 
 
@@ -91,6 +91,39 @@ class SheetExtractor:
         image = cv2.imread(file_path)
 
         crop = image[y_point:y_point + height, x_point:x_point + width]
+        dir_name, file_name = file_path.split('/')
+        cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
+
+    #new crop method
+    
+    @staticmethod
+    def crop_image_2(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
+        image = cv2.imread(file_path)
+        # Convert the image from BGR to HSV color space
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # Define the lower and upper bounds for white
+        # white : saturation of 0, value of >100 
+        lower_white = np.array([0, 0, 200])
+        upper_white = np.array([50, 30, 255])
+
+        # Create a mask for the white region
+        mask_white = cv2.inRange(hsv_image, lower_white, upper_white)
+        
+        threshold_row = 0
+
+        for row in mask_white[20:,-10]:# approximately at the up right corner
+            print(row)
+            # row is a number that >=0
+            if row > 0:
+                threshold_row += 1
+            else:
+                # row = 0, it's black
+                break
+
+        # Crop the upper rectangular region
+        crop = image[:threshold_row, :]
+
         dir_name, file_name = file_path.split('/')
         cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
 
