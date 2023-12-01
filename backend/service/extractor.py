@@ -84,7 +84,7 @@ class SheetExtractor:
     def batch_crop_images(dir_name: str):
         filenames = os.listdir(dir_name)
         for filename in filenames:
-            SheetExtractor.crop_image_2(f'{dir_name}/{filename}')
+            SheetExtractor.crop_image(f'{dir_name}/{filename}')
 
     @staticmethod
     def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
