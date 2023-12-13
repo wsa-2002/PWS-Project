@@ -97,9 +97,11 @@ class SheetExtractor:
     @staticmethod
     def batch_crop_images(dir_name: str):
         filenames = os.listdir(dir_name)
+        previous_threshold = 0
         for filename in filenames:
             SheetExtractor.crop_image(f'{dir_name}/{filename}')
-            SheetExtractor.crop_image3(f'{dir_name}/{filename}')
+            # print(previous_threshold)
+            previous_threshold = SheetExtractor.crop_image3(f'{dir_name}/{filename}',height = previous_threshold)
 
     @staticmethod
     def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
@@ -127,19 +129,26 @@ class SheetExtractor:
 
         # Create a mask for the white region
         mask_white = cv2.inRange(hsv_image, lower_white, upper_white)
+        
+        if mask_white[20 + height,-10] == 0 and mask_white[20 + height-1,-10] > 0:
+            # print('previous height: ',height)
+            pass
+            
+        else:
+            # Find the first row where the color changes from white to black
+            threshold_row = 0
 
-        # Find the first row where the color changes from white to black
-        threshold_row = 0
-
-        for i, row in enumerate(mask_white[20:, -10]):
-            if row > 0:
-                threshold_row = i
-            else:
-                break
-        # print(threshold_row,np.shape(mask_white))
+            for i, row in enumerate(mask_white[20:, -10]):
+                if row > 0:
+                    threshold_row = i
+                else:
+                    break
+            height = threshold_row
+            # print('get new hight: ',height)
+            
         # Crop the upper rectangular region
         thresholded_image = SheetExtractor.apply_threshold(image)
-        crop = thresholded_image[:20 + threshold_row, x_point:x_point + width]
+        crop = thresholded_image[:20 + height, x_point:x_point + width]
 
         # Check if the crop is not empty before saving
         if not crop.size == 0:
@@ -148,6 +157,8 @@ class SheetExtractor:
             # print('Image cropped and saved successfully.')
         else:
             pass
+        return height
+    
     @staticmethod
     def compose_and_upload_images(filenames: List[str], dir_name: str, file_extension='PDF') -> do.S3File:
         images = [cv2.imread(f"{dir_name}/{filename}") for filename in filenames]
