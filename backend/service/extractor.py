@@ -42,8 +42,6 @@ class SheetExtractor:
                 if are_different_images(img_1, img_2):
                     preserved_images.append(filenames[i+1])
             
-            # preserved_images = sorted(preserved_images, key=lambda x: int(re.findall(r'\d+', x)[0]))
-            # self.compose_and_upload_images(filenames=preserved_images, dir_name=self.dir_name)
             preserved_images = sorted(preserved_images, key=lambda x: int(re.findall(r'\d+', x)[0]))
             upload_file = self.compose_and_upload_images(filenames=preserved_images, dir_name=self.dir_name)
         finally:
@@ -95,18 +93,7 @@ class SheetExtractor:
         filenames = os.listdir(dir_name)
         previous_threshold = 0
         for filename in filenames:
-            # SheetExtractor.crop_image(f'{dir_name}/{filename}')
-            # print(previous_threshold)
             previous_threshold = SheetExtractor.crop_image3(f'{dir_name}/{filename}',height = previous_threshold)
-
-    # @staticmethod
-    # def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
-    #     image = cv2.imread(file_path)
-    #     thresholded_image = SheetExtractor.apply_threshold(image)
-
-    #     crop = thresholded_image[y_point:y_point + height, x_point:x_point + width]
-    #     dir_name, file_name = file_path.split('/')
-    #     cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
 
     @staticmethod
     def crop_image3(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
