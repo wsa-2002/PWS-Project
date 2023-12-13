@@ -31,25 +31,21 @@ class SheetExtractor:
             os.mkdir(self.dir_name)
             self.extract(dir_name=self.dir_name, filename=self.filename, interval=self.interval)
             self.batch_crop_images(self.dir_name)
-            filenames = sorted(list(filter(lambda x: True if 'crop' in x else False, os.listdir(self.dir_name))),
+            
+            filenames = sorted(list(filter(lambda x: True if 'new' in x else False, os.listdir(self.dir_name))),
                                key=lambda x: int(re.findall(r'\d+', x)[0]))
-            filenames_new = sorted(list(filter(lambda x: True if 'new' in x else False, os.listdir(self.dir_name))),
-                               key=lambda x: int(re.findall(r'\d+', x)[0]))
+            preserved_images = [filenames[0]]
 
-            # preserved_images = [filenames[0]]
-            preserved_images_new = [filenames_new[0]]
             for i in range(len(filenames) - 1):
                 img_1 = cv2.imread(f"{self.dir_name}/{filenames[i]}")
                 img_2 = cv2.imread(f"{self.dir_name}/{filenames[i + 1]}")
                 if are_different_images(img_1, img_2):
-                    # log.info('different image')
-                    # preserved_images.append(filenames[i+1])
-                    preserved_images_new.append(filenames_new[i+1])
+                    preserved_images.append(filenames[i+1])
             
             # preserved_images = sorted(preserved_images, key=lambda x: int(re.findall(r'\d+', x)[0]))
             # self.compose_and_upload_images(filenames=preserved_images, dir_name=self.dir_name)
-            preserved_images_new = sorted(preserved_images_new, key=lambda x: int(re.findall(r'\d+', x)[0]))
-            upload_file = self.compose_and_upload_images(filenames=preserved_images_new, dir_name=self.dir_name)
+            preserved_images = sorted(preserved_images, key=lambda x: int(re.findall(r'\d+', x)[0]))
+            upload_file = self.compose_and_upload_images(filenames=preserved_images, dir_name=self.dir_name)
         finally:
             pass
             os.remove(self.filename)
@@ -99,38 +95,25 @@ class SheetExtractor:
         filenames = os.listdir(dir_name)
         previous_threshold = 0
         for filename in filenames:
-            SheetExtractor.crop_image(f'{dir_name}/{filename}')
+            # SheetExtractor.crop_image(f'{dir_name}/{filename}')
             # print(previous_threshold)
             previous_threshold = SheetExtractor.crop_image3(f'{dir_name}/{filename}',height = previous_threshold)
 
-    @staticmethod
-    def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
-        image = cv2.imread(file_path)
-        thresholded_image = SheetExtractor.apply_threshold(image)
+    # @staticmethod
+    # def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
+    #     image = cv2.imread(file_path)
+    #     thresholded_image = SheetExtractor.apply_threshold(image)
 
-        crop = thresholded_image[y_point:y_point + height, x_point:x_point + width]
-        dir_name, file_name = file_path.split('/')
-        cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
+    #     crop = thresholded_image[y_point:y_point + height, x_point:x_point + width]
+    #     dir_name, file_name = file_path.split('/')
+    #     cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
 
     @staticmethod
     def crop_image3(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
         image = cv2.imread(file_path)
-        # if image is None:
-            # print(f"Error: Unable to read the image at {file_path}")
-            # return
+        thresholded_image = SheetExtractor.apply_threshold(image)
 
-        # Convert the image from BGR to HSV color space
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-        # Define the lower and upper bounds for white
-        # white: saturation of 0, value of >100 
-        lower_white = np.array([0, 0, 200])
-        upper_white = np.array([50, 30, 255])
-
-        # Create a mask for the white region
-        mask_white = cv2.inRange(hsv_image, lower_white, upper_white)
-        
-        if mask_white[20 + height,-10] == 0 and mask_white[20 + height-1,-10] > 0:
+        if thresholded_image[20 + height,-10] == 0 and thresholded_image[20 + height-1,-10] > 0:
             # print('previous height: ',height)
             pass
             
@@ -138,16 +121,14 @@ class SheetExtractor:
             # Find the first row where the color changes from white to black
             threshold_row = 0
 
-            for i, row in enumerate(mask_white[20:, -10]):
+            for i, row in enumerate(thresholded_image[20:, -10]):
                 if row > 0:
                     threshold_row = i
                 else:
                     break
             height = threshold_row
-            # print('get new hight: ',height)
-            
-        # Crop the upper rectangular region
-        thresholded_image = SheetExtractor.apply_threshold(image)
+      
+        # Crop the upper rectangular region  
         crop = thresholded_image[:20 + height, x_point:x_point + width]
 
         # Check if the crop is not empty before saving
