@@ -100,8 +100,7 @@ class SheetExtractor:
         image = cv2.imread(file_path)
         thresholded_image = SheetExtractor.apply_threshold(image)
 
-        if thresholded_image[20 + height,-10] == 0 and thresholded_image[20 + height-1,-10] > 0:
-            # print('previous height: ',height)
+        if thresholded_image[20 + height, -10] == 0 and thresholded_image[20 + height-1, -10] > 0:
             pass
             
         else:
@@ -122,7 +121,6 @@ class SheetExtractor:
         if not crop.size == 0:
             dir_name, file_name = file_path.split('/')
             cv2.imwrite(f'{dir_name}/new_{file_name}', crop)
-            # print('Image cropped and saved successfully.')
         else:
             pass
         return height

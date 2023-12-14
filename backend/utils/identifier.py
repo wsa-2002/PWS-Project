@@ -13,6 +13,7 @@ def are_different_images(img_1, img_2, threshold = 4) -> bool:
         return True
     return False
 
+
 def dhash(image, hash_size=8):
 
     resized = cv2.resize(image, (hash_size + 1, hash_size))

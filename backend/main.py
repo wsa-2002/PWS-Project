@@ -1,10 +1,10 @@
 
-# with open('logging.yaml', 'r') as file:
-#     import yaml
-#     log_config = yaml.safe_load(file.read())
+with open('logging.yaml', 'r') as file:
+    import yaml
+    log_config = yaml.safe_load(file.read())
 
-#     import logging.config
-#     logging.config.dictConfig(log_config)
+    import logging.config
+    logging.config.dictConfig(log_config)
 
 
 from fastapi import FastAPI
