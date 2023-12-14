@@ -11,14 +11,14 @@ from base import do
 import log
 from utils.identifier import are_different_images
 from persistence.s3 import temp
-
+import numpy as np
 TEMP_PDF_FILENAME = 'temp.pdf'
 
 
 class SheetExtractor:
 
     def __init__(self, url, interval: float = 1, identify_threshold: float = 0.07):
-        self.yt = YouTube(url)
+        self.yt = YouTube(url) # ,use_oauth=True, allow_oauth_cache=True
         self.filename = self.yt.streams.filter(progressive=True, file_extension='mp4').order_by(
             'resolution').desc().first().download()
 
@@ -31,16 +31,17 @@ class SheetExtractor:
             os.mkdir(self.dir_name)
             self.extract(dir_name=self.dir_name, filename=self.filename, interval=self.interval)
             self.batch_crop_images(self.dir_name)
-            filenames = sorted(list(filter(lambda x: True if 'crop' in x else False, os.listdir(self.dir_name))),
+            
+            filenames = sorted(list(filter(lambda x: True if 'new' in x else False, os.listdir(self.dir_name))),
                                key=lambda x: int(re.findall(r'\d+', x)[0]))
-
             preserved_images = [filenames[0]]
+
             for i in range(len(filenames) - 1):
                 img_1 = cv2.imread(f"{self.dir_name}/{filenames[i]}")
                 img_2 = cv2.imread(f"{self.dir_name}/{filenames[i + 1]}")
-                if are_different_images(img_1, img_2, threshold=self.identify_threshold):
-                    log.info('different image')
+                if are_different_images(img_1, img_2):
                     preserved_images.append(filenames[i+1])
+            
             preserved_images = sorted(preserved_images, key=lambda x: int(re.findall(r'\d+', x)[0]))
             upload_file = self.compose_and_upload_images(filenames=preserved_images, dir_name=self.dir_name)
         finally:
@@ -81,19 +82,51 @@ class SheetExtractor:
         file.release()  # TODO: maybe use context manager?
 
     @staticmethod
-    def batch_crop_images(dir_name: str):
-        filenames = os.listdir(dir_name)
-        for filename in filenames:
-            SheetExtractor.crop_image(f'{dir_name}/{filename}')
+    def apply_threshold(image, alpha=1.5, beta=0, threshold=140):
+        adjusted = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+        gray = cv2.cvtColor(adjusted, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+        return binary
 
     @staticmethod
-    def crop_image(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
+    def batch_crop_images(dir_name: str):
+        filenames = os.listdir(dir_name)
+        previous_threshold = 0
+        for filename in filenames:
+            previous_threshold = SheetExtractor.crop_image3(f'{dir_name}/{filename}',height = previous_threshold)
+
+    @staticmethod
+    def crop_image3(file_path: str, x_point: int = 0, y_point: int = 0, height: int = 350, width: int = 1280):
         image = cv2.imread(file_path)
+        thresholded_image = SheetExtractor.apply_threshold(image)
 
-        crop = image[y_point:y_point + height, x_point:x_point + width]
-        dir_name, file_name = file_path.split('/')
-        cv2.imwrite(f'{dir_name}/crop_{file_name}', crop)
+        if thresholded_image[20 + height,-10] == 0 and thresholded_image[20 + height-1,-10] > 0:
+            # print('previous height: ',height)
+            pass
+            
+        else:
+            # Find the first row where the color changes from white to black
+            threshold_row = 0
 
+            for i, row in enumerate(thresholded_image[20:, -10]):
+                if row > 0:
+                    threshold_row = i
+                else:
+                    break
+            height = threshold_row
+      
+        # Crop the upper rectangular region  
+        crop = thresholded_image[:20 + height, x_point:x_point + width]
+
+        # Check if the crop is not empty before saving
+        if not crop.size == 0:
+            dir_name, file_name = file_path.split('/')
+            cv2.imwrite(f'{dir_name}/new_{file_name}', crop)
+            # print('Image cropped and saved successfully.')
+        else:
+            pass
+        return height
+    
     @staticmethod
     def compose_and_upload_images(filenames: List[str], dir_name: str, file_extension='PDF') -> do.S3File:
         images = [cv2.imread(f"{dir_name}/{filename}") for filename in filenames]

@@ -9,4 +9,4 @@ database:
 	cd database && docker-compose up -d
 
 backend:
-	cd backend && uvicorn main:app
+	cd backend && poetry run uvicorn main:app
