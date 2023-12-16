@@ -10,3 +10,6 @@ database:
 
 backend:
 	cd backend && poetry run uvicorn main:app
+
+install:
+	cd backend && poetry install

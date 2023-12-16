@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
-      POSTGRES_DB: pdogs
+      POSTGRES_DB: sheetExtractor
     volumes:
       - ./db_data:/var/lib/postgresql/data
       - ./sql/:/docker-entrypoint-initdb.d
