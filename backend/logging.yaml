@@ -10,7 +10,7 @@ loggers:
   _log_:
     handlers: [errorFileHandler]
     level: ERROR
-    propagate: False
+    propagate: True
 
   _log_.event:
     handlers: [eventFileHandler]
@@ -24,12 +24,12 @@ loggers:
 
   fastapi:
     handlers: [eventFileHandler, errorFileHandler]
-    propagate: False
+    propagate: True
 
   uvicorn:
     handlers: [errorFileHandler]
     level: ERROR
-    propagate: False
+    propagate: True
 
   uvicorn.access:
     handlers: [accessFileHandler]

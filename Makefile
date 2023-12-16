@@ -12,4 +12,7 @@ backend:
 	cd backend && poetry run uvicorn main:app
 
 install:
-	cd backend && poetry install
+	cd backend && poetry install --no-root
+	@if [ ! -f backend/.env ]; then\
+		cp backend/.env.example backend/.env;\
+	fi

@@ -3,8 +3,6 @@ name = "sheet-extractor"
 version = "0.1.0"
 description = ""
 authors = ["wsa"]
-readme = "README.md"
-packages = [{include = "sheet_extractor"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
